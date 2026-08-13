@@ -1,8 +1,12 @@
-export default function PostPage() {
-  const post = {
-    title: "Hello World",
-    body: "Lorem ipsum dolor sit amet, consectetur.",
-  };
+type PostPageProps = {
+  params: Promise<{ id: string }>;
+}
+
+export default async function PostPage({ params }: PostPageProps) {
+  const { id } = await params;
+
+  const response = await fetch(`https://jsonplaceholder.typicode.com/posts/${id}`);
+  const post = await response.json();
 
   return (
     <article className="space-y-6">

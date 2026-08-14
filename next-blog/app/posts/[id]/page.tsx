@@ -14,6 +14,8 @@ export default async function PostPage({ params }: PostPageProps) {
     notFound();
   }
 
+  await new Promise((resolve) => setTimeout(resolve, 2000));
+
   return (
     <article className="space-y-6">
         <div className="space-y-4">

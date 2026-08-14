@@ -1,8 +1,8 @@
+import { prisma } from "@/lib/prisma"
 import Link from "next/link";
 
 export default async function Home() {
-  const response = await fetch("https://jsonplaceholder.typicode.com/posts");
-  const posts = await response.json();
+  const posts = await prisma.post.findMany();
 
   return (
           <div className="space-y-8">

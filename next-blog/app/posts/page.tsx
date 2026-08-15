@@ -1,5 +1,8 @@
 import { prisma } from "@/lib/prisma"
 import Link from "next/link";
+import { Suspense } from "react";
+
+export const instant = false;
 
 export default async function PostsPage() {
   const posts = await prisma.post.findMany();

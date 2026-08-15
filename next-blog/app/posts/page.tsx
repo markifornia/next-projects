@@ -27,6 +27,39 @@ export default async function PostsPage() {
               </ul>
 
             </section>
+
+            <section className="space-y-4 border-t border-zinc-200 pt-6">
+              <h2 className="text-xl font-semibold text-zinc-950">New post</h2>
+              <form className="space-y-4">
+                <label className="block space-y-2">
+                  <span className="text-sm font-medium text-zinc-700">Title</span>
+                  <input
+                    name="title"
+                    type="text"
+                    required
+                    className="h-10 w-full rounded-md border border-zinc-300 bg-zinc-50 px-3 text-sm text-zinc-950 outline-none transition-colors focus:border-zinc-500"
+                  />
+                </label>
+
+                <label className="block space-y-2">
+                  <span className="text-sm font-medium text-zinc-700">Content</span>
+                  <textarea
+                    name="content"
+                    required
+                    rows={5}
+                    className="w-full rounded-md border border-zinc-300 bg-zinc-50 px-3 py-2 text-sm text-zinc-950 outline-none transition-colors focus:border-zinc-500"
+                  />
+                </label>
+
+                <button
+                  type="submit"
+                  className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800"
+                >
+                  Create
+                </button>
+              </form>
+            </section>
+
           </div>
   );
 }

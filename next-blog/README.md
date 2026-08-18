@@ -20,17 +20,34 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Database (Prisma)
+
+This project uses [Prisma](https://www.prisma.io/) as the ORM for talking to the database.
+
+Start a local Prisma-managed dev database:
+
+```bash
+npx prisma dev
+```
+
+Open Prisma Studio to view and edit data in the database directly:
+
+```bash
+npx prisma studio
+```
+
+Prisma Studio runs at [http://localhost:5555](http://localhost:5555) by default.
+
+If you change `prisma/schema.prisma`, remember to generate the client and apply migrations as needed (e.g. `npx prisma generate`, `npx prisma migrate dev`) before running the app.
+
+## Authentication (Kinde)
+
+This project uses [Kinde](https://www.kinde.com/) for authentication.
+
+- Sign up / configure your application at the [Kinde dashboard](https://www.kinde.com/).
+- Set the required Kinde environment variables (client ID/secret, issuer URL, redirect URLs, etc.) in your `.env` file.
+- Refer to the [Kinde Next.js SDK docs](https://docs.kinde.com/developer-tools/sdks/backend/nextjs-sdk/) for setup details, auth helpers, and protecting routes/pages.
+
 ## Learn More
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+To learn more about Next.js, take a look

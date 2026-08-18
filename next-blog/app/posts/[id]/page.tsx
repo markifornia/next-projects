@@ -34,9 +34,9 @@ export default async function PostPage() {
             <h1 className="text-center text-4xl font-semibold text-zinc-950 sm:text-5xl">
                 Posts
             </h1>
-            <Suspense fallback={<p>Loading recently viewed posts...</p>}>
+            {/* <Suspense fallback={<p>Loading recently viewed posts...</p>}>
                 <RecentlyViewedPosts />
-            </Suspense>
+            </Suspense> */}
         </div>
     </article>
   );

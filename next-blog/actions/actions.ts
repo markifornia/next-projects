@@ -18,3 +18,23 @@ export async function createPost(formData: FormData) {
     revalidatePath("/posts");
 
 }
+
+export async function upvotePost(id: number) {
+    if (!Number.isInteger(id)) {
+        throw new Error("Invalid post id");
+    }
+
+    await prisma.post.update({
+        where: {
+            id,
+        },
+        data: {
+            votes: {
+                increment: 1
+            }
+        },
+    });
+
+    revalidatePath("/posts");
+    revalidatePath(`/posts/${id}`);
+}

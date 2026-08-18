@@ -3,13 +3,16 @@ import { prisma } from "@/lib/prisma"
 import Link from "next/link";
 import { cacheLife, cacheTag } from "next/cache";
 import { Suspense } from "react";
+import UpvoteBtn from "@/components/upvote-btn";
 
 const getPosts = async () =>{
   "use cache";
   cacheLife("days");
   cacheTag("posts");
 
-  return await prisma.post.findMany();
+  return await prisma.post.findMany({
+    orderBy: { id: "asc" },
+  });
 }
 
 export default async function PostsPage() {
@@ -30,6 +33,9 @@ export default async function PostsPage() {
                       <Link href={`/posts/${post.id}`} className="text-lg font-semibold text-zinc-950 hover:text">
                         {post.title.charAt(0).toUpperCase() + post.title.slice(1)}
                       </Link>
+
+                      <UpvoteBtn postId={post.id} votes={post.votes} />
+
                     </div>
                   </li>
                 ))}

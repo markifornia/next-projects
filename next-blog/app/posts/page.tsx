@@ -1,11 +1,20 @@
+import { createPost } from "@/actions/actions"
 import { prisma } from "@/lib/prisma"
 import Link from "next/link";
+import { cacheLife, cacheTag } from "next/cache";
 import { Suspense } from "react";
 
-export const instant = false;
+const getPosts = async () =>{
+  "use cache";
+  cacheLife("days");
+  cacheTag("posts");
+
+  return await prisma.post.findMany();
+}
 
 export default async function PostsPage() {
-  const posts = await prisma.post.findMany();
+
+  const posts = await getPosts();
 
   return (
           <div className="space-y-8">
@@ -15,7 +24,7 @@ export default async function PostsPage() {
               </h1>
 
               <ul className="space-y-3">
-                {posts.slice(0, 5).map((post) => (
+                {posts.slice(0, 10).map((post) => (
                   <li key={post.id}>
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                       <Link href={`/posts/${post.id}`} className="text-lg font-semibold text-zinc-950 hover:text">
@@ -30,7 +39,7 @@ export default async function PostsPage() {
 
             <section className="space-y-4 border-t border-zinc-200 pt-6">
               <h2 className="text-xl font-semibold text-zinc-950">New post</h2>
-              <form className="space-y-4">
+              <form action={createPost} className="space-y-4">
                 <label className="block space-y-2">
                   <span className="text-sm font-medium text-zinc-700">Title</span>
                   <input

@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma"
 import Link from "next/link";
 
 export default async function Home() {
+
   const posts = await prisma.post.findMany();
 
   return (
@@ -12,7 +13,7 @@ export default async function Home() {
               </h1>
 
               <ul className="space-y-3">
-                {posts.slice(0, 5).map((post) => (
+                {posts.slice(0, 10).map((post) => (
                   <li key={post.id}>
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                       <Link href={`/posts/${post.id}`} className="text-lg font-semibold text-zinc-950 hover:text">

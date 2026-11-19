@@ -11,8 +11,12 @@ streamed to the page as it's written.
 
 - `GET /api/apod` — server-side route that picks a random date since
   APOD's archive began (1995-06-16) and fetches that day's entry from
-  NASA's public API. Falls back to a retry date if a given day has no
-  entry.
+  NASA's new `science.nasa.gov/wp-json/wp/v2/apod-basic/YYMMDD`
+  endpoint (the legacy `api.nasa.gov/planetary/apod` endpoint now
+  returns a placeholder for every date and is being archived
+  2026-12-01). `lib/apod.js` cleans the HTML fields and picks the
+  right image URL; entries that are missing media or are the
+  "NASA Science" placeholder are skipped and another date is tried.
 - `POST /api/describe` — server-side route that sends the image's
   title/caption to Groq (`openai/gpt-oss-120b`) via the OpenAI SDK's
   compatible client, and **streams** the response back to the client
@@ -20,7 +24,7 @@ streamed to the page as it's written.
 - `app/page.js` — client component with a "Shuffle" button that calls
   both routes in sequence and renders the image + streaming text.
 
-Both API keys stay server-side (in environment variables) and are
+The Groq key stays server-side (in an environment variable) and is
 never exposed to the browser.
 
 ## Run locally
@@ -36,10 +40,8 @@ Open http://localhost:3000
 
 ### Getting API keys
 
-- **NASA_API_KEY** — free, instant, at https://api.nasa.gov. Not
-  required for testing — the app falls back to NASA's shared
-  `DEMO_KEY`, which is rate-limited (30 requests/hour), so get your
-  own key before demoing this live.
+- **NASA** — no key needed. The app reads APOD from NASA's new
+  `science.nasa.gov` endpoint, which is public.
 - **GROQ_API_KEY** — free, no credit card required, at
   https://console.groq.com/keys. Sign in with email, Google, or
   GitHub, then click "Create API Key". Required for the AI
@@ -51,7 +53,6 @@ Open http://localhost:3000
 1. Push this project to a GitHub repo.
 2. Go to https://vercel.com/new and import the repo.
 3. In the project's **Settings → Environment Variables**, add:
-   - `NASA_API_KEY` (optional, defaults to `DEMO_KEY`)
    - `GROQ_API_KEY` (required)
 4. Deploy. Vercel auto-detects Next.js — no build config needed.
 5. **Important:** if you ever change an environment variable value
@@ -73,7 +74,7 @@ won't 404 on refresh or on the API routes.
 
 ## Possible extensions for the portfolio writeup
 
-- Cache each day's NASA response (e.g. with `fetch`'s `next: { revalidate }`) to cut down on repeat calls to `DEMO_KEY`
+- Cache each day's NASA response (e.g. with `fetch`'s `next: { revalidate }`) to cut down on repeat calls
 - Add a "favorites" list using localStorage
 - Swap APOD for NASA's Image and Video Library search API for more variety
 - Add a loading skeleton animation instead of plain text

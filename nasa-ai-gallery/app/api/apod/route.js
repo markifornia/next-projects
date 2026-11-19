@@ -22,21 +22,15 @@ async function fetchWithTimeout(url, ms) {
   }
 }
 
-// Real APOD images are hosted on apod.nasa.gov. Anything else (site logos,
-// generic placeholder records) gets rejected so we pick another date.
+// Known placeholder records NASA's API sometimes returns instead of a real
+// astronomy picture (generic site logo + boilerplate caption). Compared
+// case-insensitively against the entry title.
+const BLOCKED_TITLES = new Set(["nasa science"]);
+
 function looksLikeRealApod(data) {
   if (!data || !data.title || !data.explanation || !data.url) return false;
-
-  if (data.media_type === "image") {
-    try {
-      return new URL(data.url).hostname === "apod.nasa.gov";
-    } catch {
-      return false;
-    }
-  }
-
-  // Videos (YouTube/Vimeo embeds) are fine as long as they have a URL
-  return data.media_type === "video";
+  if (BLOCKED_TITLES.has(String(data.title).trim().toLowerCase())) return false;
+  return data.media_type === "image" || data.media_type === "video";
 }
 
 export async function GET(req) {
@@ -79,6 +73,13 @@ export async function GET(req) {
         return NextResponse.json(data);
       }
 
+      // Logged so rejected entries show up in Vercel's runtime logs
+      console.warn("APOD entry rejected", {
+        date,
+        title: data?.title,
+        media_type: data?.media_type,
+        url: data?.url
+      });
       lastError = "NASA returned an unusable entry";
     } catch (err) {
       const timedOut = err.name === "AbortError";

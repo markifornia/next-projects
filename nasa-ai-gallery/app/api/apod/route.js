@@ -4,11 +4,12 @@ import { rateLimit, getClientIp } from "../../../lib/rateLimit";
 // APOD archive starts 1995-06-16
 const APOD_START = new Date("1995-06-16").getTime();
 const FETCH_TIMEOUT_MS = 8000;
+const MAX_ATTEMPTS = 4;
 
 function randomDate() {
   const now = Date.now();
   const t = APOD_START + Math.random() * (now - APOD_START);
-  return new Date(t).toISOString().slice(0, 10);
+  return new Date(t).toISOString().slice(0, 10); // YYYY-MM-DD
 }
 
 async function fetchWithTimeout(url, ms) {
@@ -19,6 +20,23 @@ async function fetchWithTimeout(url, ms) {
   } finally {
     clearTimeout(timer);
   }
+}
+
+// Real APOD images are hosted on apod.nasa.gov. Anything else (site logos,
+// generic placeholder records) gets rejected so we pick another date.
+function looksLikeRealApod(data) {
+  if (!data || !data.title || !data.explanation || !data.url) return false;
+
+  if (data.media_type === "image") {
+    try {
+      return new URL(data.url).hostname === "apod.nasa.gov";
+    } catch {
+      return false;
+    }
+  }
+
+  // Videos (YouTube/Vimeo embeds) are fine as long as they have a URL
+  return data.media_type === "video";
 }
 
 export async function GET(req) {
@@ -32,41 +50,44 @@ export async function GET(req) {
   }
 
   const apiKey = process.env.NASA_API_KEY || "DEMO_KEY";
-  const date = randomDate();
+  let lastError = "No valid APOD entry found";
+  let lastStatus = 502;
 
-  try {
-    const res = await fetchWithTimeout(
-      `https://api.nasa.gov/planetary/apod?api_key=${apiKey}&date=${date}&thumbs=true`,
-      FETCH_TIMEOUT_MS
-    );
-
-    if (!res.ok) {
-      const retryDate = randomDate();
-      const retryRes = await fetchWithTimeout(
-        `https://api.nasa.gov/planetary/apod?api_key=${apiKey}&date=${retryDate}&thumbs=true`,
+  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+    const date = randomDate();
+    try {
+      const res = await fetchWithTimeout(
+        `https://api.nasa.gov/planetary/apod?api_key=${apiKey}&date=${date}&thumbs=true`,
         FETCH_TIMEOUT_MS
       );
-      if (!retryRes.ok) {
+
+      if (res.status === 429) {
+        // Quota exhausted — more attempts will only make it worse
         return NextResponse.json(
-          { error: `NASA API request failed (status ${retryRes.status})` },
-          { status: 502 }
+          { error: "NASA API rate limit reached. Try again in a bit." },
+          { status: 429 }
         );
       }
-      const retryData = await retryRes.json();
-      return NextResponse.json(retryData);
-    }
 
-    const data = await res.json();
-    return NextResponse.json(data);
-  } catch (err) {
-    const timedOut = err.name === "AbortError";
-    return NextResponse.json(
-      {
-        error: timedOut
-          ? "NASA API timed out"
-          : `Failed to reach NASA API: ${err.message}`
-      },
-      { status: timedOut ? 504 : 500 }
-    );
+      if (!res.ok) {
+        lastError = `NASA API request failed (status ${res.status})`;
+        continue;
+      }
+
+      const data = await res.json();
+      if (looksLikeRealApod(data)) {
+        return NextResponse.json(data);
+      }
+
+      lastError = "NASA returned an unusable entry";
+    } catch (err) {
+      const timedOut = err.name === "AbortError";
+      lastError = timedOut
+        ? "NASA API timed out"
+        : `Failed to reach NASA API: ${err.message}`;
+      lastStatus = timedOut ? 504 : 500;
+    }
   }
+
+  return NextResponse.json({ error: lastError }, { status: lastStatus });
 }
